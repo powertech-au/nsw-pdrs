@@ -507,6 +507,7 @@ summary:hover{color:var(--red)}
           <li>Battery must be on the approved product list specified by IPART</li>
           <li>Must be installed outdoors</li>
           <li>Minimum customer payment of $1,000 excluding GST</li>
+          <li>10-year warranty on each new item, 70% capacity retained</li>
           <li>No existing battery at the same NMI</li>
         </ul>
       </div>
@@ -576,10 +577,10 @@ summary:hover{color:var(--red)}
           <tr><th scope="row">Incentivised capacity</th><td>Above 20 kWh up to 200 kWh</td><td>Above 200 kWh up to 10,000 kWh</td></tr>
           <tr><th scope="row">Site restriction</th><td colspan="2">Not a Residential Building and not a Data Centre. One BESS4 or BESS5 implementation per site, permanently.</td></tr>
           <tr><th scope="row">Product listing</th><td>Must be on the approved product list specified by IPART, currently the Clean Energy Council approved battery list. For modular systems, each module must be approved rather than the assembled system.</td><td>Must be tested in accordance with UL 9540A, with capacity recorded as specified by IPART.</td></tr>
-          <tr><th scope="row">Inverter ratio</th><td colspan="2">Usable Battery Capacity must not exceed six times the Battery Inverter Output.</td></tr>
+          <tr><th scope="row">Inverter ratio</th><td>Usable Battery Capacity must not exceed six times the Battery Inverter Output, as recorded on the approved product list. The listed figure governs, not the inverter datasheet.</td><td>Usable Battery Capacity must not exceed six times the Battery Inverter Output, recorded in the manner specified by IPART.</td></tr>
           <tr><th scope="row">Solar ratio</th><td colspan="2">Where new solar is claimed, New Solar Photovoltaic Capacity must be at least a quarter of the Usable Battery Capacity.</td></tr>
           <tr><th scope="row">Aggregator control</th><td colspan="2">Battery must be internet connectable and controllable by a Demand Response Aggregator.</td></tr>
-          <tr><th scope="row">Warranty</th><td>10 years, guaranteeing at least 70% of Usable Battery Capacity retained at 10 years</td><td>Minimal, set by the equipment requirements only</td></tr>
+          <tr><th scope="row">Warranty</th><td>Each item of End-User Equipment, including any new inverter but excluding inverters already installed before the Implementation Date, must carry at least 10 years and guarantee that 70% of Usable Battery Capacity is retained at 10 years.</td><td>None. BESS5 sets no warranty requirement.</td></tr>
           <tr><th scope="row">Installer</th><td>Installer on the approved list specified by IPART, currently the Solar Accreditation Australia list, working under a suitably licensed person</td><td>Suitably licensed person</td></tr>
           <tr><th scope="row">Standards</th><td>Behind the meter, installed in accordance with AS/NZS 5139</td><td>All applicable Australian Standards</td></tr>
           <tr><th scope="row">Approvals</th><td>Complying development certificate or development application, plus network approvals</td><td>Development application, plus network approvals</td></tr>
@@ -880,7 +881,7 @@ summary:hover{color:var(--red)}
         <li><strong>Building class and use.</strong> Not a Residential Building, not a Data Centre. Apartment sites go to BESS3, not BESS4.</li>
         <li><strong>Prior implementations.</strong> Confirm no BESS4 or BESS5 has ever been run at the site, and for BESS3 that no battery exists at the NMI.</li>
         <li><strong>The four-hour test.</strong> Size the inverter against the battery early. Certificates are capped at four hours of inverter output regardless of how much storage you install.</li>
-        <li><strong>The six-times ratio.</strong> Usable capacity must not exceed six times battery inverter output, which sets a floor on inverter sizing.</li>
+        <li><strong>The six-times ratio.</strong> Usable capacity must not exceed six times battery inverter output, which sets a floor on inverter sizing. Under BESS3 and BESS4 the figure that counts is the one recorded on the approved product list, so an off-list PCS paired with a listed battery has no number the test can be run against.</li>
         <li><strong>Solar timing.</strong> If new solar is in scope, land it within 90 days either side of the battery and at no less than a quarter of the usable battery capacity.</li>
         <li><strong>Approvals.</strong> Development application or complying development certificate, plus DNSP connection and commissioning requirements, before the Implementation Date.</li>
         <li><strong>Aggregator control.</strong> The battery has to be internet connectable and controllable by a Demand Response Aggregator, which is a procurement decision, not an afterthought.</li>
