@@ -412,7 +412,16 @@ details.faq summary:hover{color:var(--red)}
             <div class="field" id="fSolarKw" style="margin-top:22px">
               <label for="solar">New solar capacity (kW)</label>
               <input type="number" id="solar" value="45" min="0" step="0.1" inputmode="decimal">
-              <span class="hint">Must be at least a quarter of usable capacity to claim the higher rate.</span>
+              <span class="hint">Must be at least a quarter of usable capacity to claim the higher rate under BESS4 and BESS5.</span>
+            </div>
+
+            <div class="field is-hidden" id="fNswFunded" style="margin-top:22px">
+              <label>Is the new solar funded by a NSW Government program?</label>
+              <div class="seg" id="segNswFunded" role="group" aria-label="NSW Government funded solar">
+                <button type="button" data-nsw="no" aria-pressed="true">No</button>
+                <button type="button" data-nsw="yes" aria-pressed="false">Yes</button>
+              </div>
+              <span class="hint">Equation BESS3.2 does not apply where NSW Government funding has been received for the solar, so the rate falls to 0.0853.</span>
             </div>
           </fieldset>
 
@@ -618,7 +627,7 @@ details.faq summary:hover{color:var(--red)}
     </div>
     <div class="fine">
       <p><strong>Electrical Contractors Licences:</strong> Victoria 22392 &nbsp;|&nbsp; NSW 253377C &nbsp;|&nbsp; QLD 69167 &nbsp;|&nbsp; NT C2702 &nbsp;|&nbsp; SA PGE225156 &nbsp;|&nbsp; WA EC001900</p>
-      <p>This calculator is provided for general information, current as at 23 August 2026. It is not legal, financial or taxation advice, and it is not a quote. Where anything here differs from the Peak Demand Reduction Scheme Rule of 2022 as amended, the Rule prevails. Certificate values depend on market prices at the time of creation and are not guaranteed. Eligibility must be confirmed with an Accredited Certificate Provider for the relevant activity before you rely on it.</p>
+      <p>This calculator is provided for general information, current as at 31 August 2026. It is not legal, financial or taxation advice, and it is not a quote. Where anything here differs from the Peak Demand Reduction Scheme Rule of 2022 as amended, the Rule prevails. Certificate values depend on market prices at the time of creation and are not guaranteed. Eligibility must be confirmed with an Accredited Certificate Provider for the relevant activity before you rely on it.</p>
       <p>&copy; 2026 Powertech Pty Ltd</p>
     </div>
   </div>
@@ -635,6 +644,7 @@ details.faq summary:hover{color:var(--red)}
   var el = function (id) { return document.getElementById(id); };
   var site = "business";
   var solarYes = true;
+  var nswFunded = false;
 
   var money = function (n) {
     if (!isFinite(n)) n = 0;
@@ -649,10 +659,11 @@ details.faq summary:hover{color:var(--red)}
     return isFinite(v) && v > 0 ? v : 0;
   };
 
-  // Cheaper Home Batteries: tapered allowance on the first 50 kWh of usable capacity.
-  // Gated on usable capacity, from 1 kWh up to but not including 100 kWh.
-  function stcCount(usable) {
-    if (!(usable >= 1) || usable >= 100) return 0;
+  // Cheaper Home Batteries: eligibility is judged on NOMINAL capacity, 5 to 100 kWh
+  // inclusive. Certificates are then created on the first 50 kWh of USABLE capacity,
+  // tapered. The two are deliberately different measures; do not collapse them.
+  function stcCount(usable, nominal) {
+    if (!(nominal >= 5) || nominal > 100) return 0;
     var c  = Math.min(usable, 50);
     var b1 = Math.min(c, 14) * 1.0;
     var b2 = Math.min(Math.max(c - 14, 0), 14) * 0.6;
@@ -695,7 +706,9 @@ details.faq summary:hover{color:var(--red)}
     } else if (act === "BESS3") {
       caps = [usable, 5 * dwellings, 4 * inverter];
       bc = Math.min.apply(null, caps);
-      rate = higher ? 0.12 : 0.0853;
+      // Equation BESS3.2 is disapplied where NSW Government funding was received for
+      // the New Solar Photovoltaic Capacity, which drops the activity to BESS3.3.
+      rate = (higher && !nswFunded) ? 0.12 : 0.0853;
       dsc = bc * rate;
     } else if (act === "BESS4") {
       caps = [usable, 4 * inverter];
@@ -752,7 +765,16 @@ details.faq summary:hover{color:var(--red)}
           : "<b>No four-hour derating.</b> The inverter is at or above the " + num(need, 1) + " kW needed for full value."
       });
 
-      if (higher) {
+      if (higher && act === "BESS3") {
+        // BESS3 sets no solar ratio requirement. Equation BESS3.2 turns only on the
+        // 90-day timing and on the solar not being NSW Government funded.
+        checks.push({
+          s: nswFunded ? "warn" : "ok",
+          t: nswFunded
+            ? "<b>NSW funded solar, higher rate lost.</b> Equation BESS3.2 does not apply where NSW Government funding has been received for the new solar, so the rate falls to 0.0853 kW/kWh."
+            : "<b>New solar timing.</b> BESS3 sets no minimum solar size. The 0.12 kW/kWh rate needs only that the battery lands within 90 days of the new solar, and that the solar is not NSW Government funded."
+        });
+      } else if (higher) {
         var solarOk = solar >= minSolarKw - 1e-9;
         checks.push({
           s: solarOk ? "ok" : "warn",
@@ -802,7 +824,7 @@ details.faq summary:hover{color:var(--red)}
     if (!eligible) prcs = 0;
     var prcValue = prcs * prcPrice;
 
-    var stcs = act === "BESS2" ? 0 : stcCount(usable);
+    var stcs = act === "BESS2" ? 0 : stcCount(usable, nominal);
     var stcValue = Math.round(stcs * stcPrice);
 
     if (act !== "BESS2") {
@@ -810,8 +832,8 @@ details.faq summary:hover{color:var(--red)}
         s: stcs > 0 ? "ok" : "warn",
         t: stcs > 0
           ? "<b>Cheaper Home Batteries.</b> " + num(stcs, 2) + " STCs, on the first 50 kWh of usable capacity after the taper."
-          : "<b>No federal battery STCs.</b> The Cheaper Home Batteries Program is counted on usable capacity below 100 kWh. This battery is " +
-            num(usable, 2) + " kWh usable."
+          : "<b>No federal battery STCs.</b> The Cheaper Home Batteries Program runs on nominal capacity from 5 to 100 kWh. This battery is " +
+            num(nominal, 2) + " kWh nominal."
       });
     }
 
@@ -864,7 +886,7 @@ details.faq summary:hover{color:var(--red)}
     el("rAct").textContent = act;
     el("rUsable").textContent = num(usable, 2) + " kWh";
     el("rBc").textContent = num(bc, 2) + " kWh";
-    el("rMinSolar").textContent = num(minSolarKw, 1) + " kW";
+    el("rMinSolar").textContent = (act === "BESS4" || act === "BESS5") ? num(minSolarKw, 1) + " kW" : "n/a";
     el("rDsc").textContent = num(pdsc, 3) + " kW";
     el("rPdrc").textContent = num(pdrc, 0) + " kW";
     el("hNameplate").textContent = num(nominal, 0);
@@ -908,6 +930,7 @@ details.faq summary:hover{color:var(--red)}
     el("fInverter").classList.toggle("is-hidden", noSolarPath);
     el("fSolar").classList.toggle("is-hidden", noSolarPath);
     el("fSolarKw").classList.toggle("is-hidden", noSolarPath || !solarYes);
+    el("fNswFunded").classList.toggle("is-hidden", next !== "apartment" || !solarYes);
     compute();
   }
 
@@ -918,8 +941,23 @@ details.faq summary:hover{color:var(--red)}
       btns[i].setAttribute("aria-pressed", btns[i].getAttribute("data-solar") === next ? "true" : "false");
     }
     el("fSolarKw").classList.toggle("is-hidden", !solarYes || site === "home" || site === "vpp");
+    el("fNswFunded").classList.toggle("is-hidden", !solarYes || site !== "apartment");
     compute();
   }
+
+  function setNswFunded(next) {
+    nswFunded = (next === "yes");
+    var btns = el("segNswFunded").querySelectorAll("button");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].setAttribute("aria-pressed", btns[i].getAttribute("data-nsw") === next ? "true" : "false");
+    }
+    compute();
+  }
+
+  el("segNswFunded").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-nsw]");
+    if (b) setNswFunded(b.getAttribute("data-nsw"));
+  });
 
   el("segSolar").addEventListener("click", function (e) {
     var b = e.target.closest("button[data-solar]");
