@@ -1,5 +1,6 @@
 *.html text eol=lf
 *.md   text eol=lf
+*.bat  text eol=crlf
 *.png  binary
 *.woff binary
 *.woff2 binary
