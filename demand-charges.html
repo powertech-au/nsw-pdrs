@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NSW Demand Charge Calculator | Powertech</title>
+<meta name="description" content="Estimate the network demand charge a battery can remove on Ausgrid, Endeavour Energy and Essential Energy commercial tariffs for 2026-27, including the energy needed to hold the peak across each demand window.">
+<link rel="stylesheet" href="https://use.typekit.net/vvw3qvf.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ==========================================================================
+   Powertech brand tokens
+   Powertech Red   #EF4836   PMS 179 C   CMYK 00 87 85 00
+   Powertech Grey  #303B41   PMS 425 C   CMYK 48 29 26 76
+   ========================================================================== */
+:root{
+  --red:#ef4836;
+  --grey:#303b41;
+  --grey-70:rgba(48,59,65,.7);
+  --grey-45:rgba(48,59,65,.45);
+  --rule:rgba(48,59,65,.15);
+  --mist:#ebecee;
+  --mist-soft:#f5f6f7;
+  --green:#1f7a44;
+  --f-body:paralucent,"Figtree","Segoe UI",Helvetica,Arial,sans-serif;
+  --f-display:"Fuglesans",paralucent,"Figtree","Segoe UI",Helvetica,Arial,sans-serif;
+  --wrap:1140px;
+}
+@font-face{
+  font-family:"Fuglesans";
+  src:url("assets/Fuglesans-Light.woff2") format("woff2"),
+      url("assets/Fuglesans-Light.woff") format("woff");
+  font-weight:300;font-style:normal;font-display:swap;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  margin:0;background:#fff;color:var(--grey);font-family:var(--f-body);
+  font-weight:400;font-size:16px;line-height:1.8em;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+}
+img{max-width:100%;height:auto;display:block}
+a{color:var(--red);text-decoration:none;transition:color .3s ease}
+a:hover{color:var(--grey)}
+::selection{background:#25414f;color:#fff}
+
+h1,h2,h3,h4,h5,h6{clear:both;margin:0 0 24px;line-height:1.05em}
+h1{font-family:var(--f-display);font-weight:300;font-size:90px;text-transform:uppercase;line-height:.9em}
+h1 span{color:var(--red)}
+h2{font-weight:700;font-size:50px}
+h3{font-weight:900;font-size:30px;text-transform:uppercase}
+h4{font-weight:700;font-size:20px;line-height:1.25em;margin-bottom:12px}
+h5{font-weight:900;font-size:14px;text-transform:uppercase;letter-spacing:.08em;line-height:1.4em;margin-bottom:16px}
+p{margin:0 0 24px}
+p:last-child{margin-bottom:0}
+strong{font-weight:700}
+
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 16px}
+section{padding:80px 0}
+.bg-mist{background:var(--mist-soft)}
+.eyebrow{
+  display:block;font-weight:900;font-size:14px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--red);line-height:1.4em;margin-bottom:14px;
+}
+.sec-head{max-width:780px;margin-bottom:52px}
+.sec-head p{color:var(--grey-70)}
+
+/* ---------- buttons ------------------------------------------------------ */
+.btn{
+  display:inline-flex;align-items:center;gap:14px;
+  background:var(--grey);color:#fff !important;border:0;border-radius:0;
+  padding:6px 18px;min-height:40px;
+  font-family:var(--f-body);font-size:20px;font-weight:400;line-height:1.2;
+  text-transform:uppercase;transition:background .4s ease;cursor:pointer;
+}
+.btn::after{content:"+";font-weight:300;font-size:22px;line-height:1}
+.btn:hover{background:var(--red);color:#fff !important}
+.btn-red{background:var(--red)}
+.btn-red:hover{background:var(--grey)}
+.btn-ghost{background:transparent;color:#fff !important;box-shadow:inset 0 0 0 2px #fff}
+.btn-ghost:hover{background:#fff;color:var(--grey) !important}
+
+/* ---------- header ------------------------------------------------------- */
+.site-header{position:sticky;top:0;z-index:50;background:#fff;box-shadow:0 1px 0 var(--rule)}
+.site-header .bar{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-left:24px}
+.brand img{width:190px}
+.site-nav{display:flex;align-items:center;gap:30px;margin-left:auto}
+.site-nav a{color:var(--grey);font-size:16px;text-transform:uppercase;letter-spacing:.02em}
+.site-nav a::after{content:" +";color:var(--grey-45)}
+.site-nav a:hover{color:var(--red)}
+.site-nav a.is-current{color:var(--red)}
+.lets-talk{
+  display:flex;flex-direction:column;align-items:flex-start;justify-content:center;
+  width:75px;height:75px;padding:4px 10px;flex:0 0 auto;
+  background:var(--red);color:#fff !important;
+  font-weight:900;font-size:16px;line-height:1.05em;text-transform:uppercase;
+  transition:background .4s ease;
+}
+.lets-talk .p{font-weight:300;font-size:18px}
+.lets-talk:hover{background:var(--grey)}
+
+/* ---------- page header -------------------------------------------------- */
+.page-header{background:var(--mist);position:relative;overflow:hidden}
+.page-header::after{
+  content:"";position:absolute;inset:0 0 0 auto;width:40%;
+  background:
+    radial-gradient(circle at 76% 44%, rgba(239,72,54,.18) 0 36%, transparent 62%),
+    linear-gradient(115deg, transparent 0 46%, rgba(48,59,65,.07) 46% 100%);
+  pointer-events:none;
+}
+.page-header .inner{position:relative;z-index:2;padding:48px 0 54px}
+.crumbs{font-size:20px;color:var(--grey);margin-bottom:26px}
+.crumbs a{color:var(--grey)}
+.crumbs a:hover{color:var(--red)}
+.crumbs .sep{color:var(--grey-45);padding:0 8px}
+.page-header h1{margin-bottom:22px}
+.page-header .kicker{font-size:21px;line-height:1.5em;font-weight:300;max-width:680px}
+
+/* ---------- calculator shell -------------------------------------------- */
+.calc-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:40px;align-items:start}
+.panel{background:#fff;box-shadow:0 0 0 1px var(--rule);padding:34px 32px}
+.panel + .panel{margin-top:24px}
+
+fieldset{border:0;margin:0 0 28px;padding:0}
+fieldset:last-of-type{margin-bottom:0}
+legend{
+  font-weight:900;font-size:13px;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--grey);padding:0;margin-bottom:14px;line-height:1.5em;
+}
+
+/* segmented control */
+.seg{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--rule)}
+.seg button{
+  flex:1 1 auto;min-width:120px;border:0;background:#fff;color:var(--grey);
+  font-family:var(--f-body);font-size:14px;font-weight:700;line-height:1.35em;
+  padding:12px 14px;cursor:pointer;transition:background .25s ease,color .25s ease;
+  border-right:1px solid var(--rule);
+}
+.seg button:last-child{border-right:0}
+.seg button:hover{background:var(--mist-soft)}
+.seg button[aria-pressed="true"]{background:var(--red);color:#fff}
+
+/* detected activity pill */
+.detected{
+  display:inline-block;margin-top:14px;padding:4px 14px;
+  background:rgba(239,72,54,.1);color:var(--red);
+  font-weight:900;font-size:12px;letter-spacing:.07em;text-transform:uppercase;
+  line-height:1.9em;
+}
+.detected.is-bad{background:rgba(48,59,65,.1);color:var(--grey-70)}
+
+/* inputs */
+.field-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.field{display:flex;flex-direction:column}
+.field.is-hidden{display:none}
+.field label{font-weight:700;font-size:15px;line-height:1.4em;margin-bottom:8px}
+.field input,.field select{
+  font-family:var(--f-body);font-size:17px;font-weight:400;color:var(--grey);
+  padding:11px 13px;border:1px solid var(--rule);border-radius:0;background:#fff;
+  width:100%;transition:border-color .25s ease;
+}
+.field input:focus,.field select:focus{outline:0;border-color:var(--red)}
+.field .hint{font-size:13px;line-height:1.55em;color:var(--grey-70);margin-top:7px}
+
+/* checkbox row */
+.check-row{display:flex;align-items:flex-start;gap:12px;margin-top:20px;cursor:pointer}
+.check-row input{
+  appearance:none;-webkit-appearance:none;flex:0 0 auto;
+  width:22px;height:22px;margin:2px 0 0;border:1px solid var(--grey-45);
+  background:#fff;cursor:pointer;position:relative;transition:all .2s ease;
+}
+.check-row input:checked{background:var(--red);border-color:var(--red)}
+.check-row input:checked::after{
+  content:"";position:absolute;left:7px;top:3px;width:6px;height:11px;
+  border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(45deg);
+}
+.check-row input:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.check-row .ct{font-size:15px;line-height:1.5em}
+.check-row .ct small{display:block;font-size:13px;color:var(--grey-70);line-height:1.5em}
+
+/* advanced */
+details.adv{border-top:1px solid var(--rule);margin-top:26px}
+details.adv summary{
+  list-style:none;cursor:pointer;padding:18px 34px 0 0;position:relative;
+  font-weight:900;font-size:13px;letter-spacing:.09em;text-transform:uppercase;
+}
+details.adv summary::-webkit-details-marker{display:none}
+details.adv summary::after{
+  content:"+";position:absolute;right:4px;top:14px;
+  font-weight:300;font-size:26px;line-height:1;color:var(--red);
+}
+details.adv[open] summary::after{content:"\2013"}
+details.adv summary:hover{color:var(--red)}
+.adv-body{padding-top:20px}
+
+/* ---------- results ------------------------------------------------------ */
+.results{background:var(--grey);color:#fff;padding:32px 30px;position:sticky;top:120px}
+.results h4{color:#fff;font-size:13px;font-weight:900;letter-spacing:.09em;text-transform:uppercase;margin-bottom:22px}
+.headline{border-bottom:1px solid rgba(255,255,255,.22);padding-bottom:22px;margin-bottom:22px}
+.headline .lbl{display:block;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.7);line-height:1.6em}
+.headline .val{
+  display:block;font-family:var(--f-display);font-weight:300;font-size:52px;
+  line-height:1.05em;color:var(--red);
+}
+.headline .val.is-nil{color:rgba(255,255,255,.45);font-size:34px}
+.rrow{display:flex;justify-content:space-between;gap:16px;font-size:15px;line-height:1.7em;padding:5px 0}
+.rrow .k{color:rgba(255,255,255,.78)}
+.rrow .v{font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.rrow.is-sum{border-top:1px solid rgba(255,255,255,.22);margin-top:12px;padding-top:14px;font-size:17px}
+.rrow.is-sum .k{color:#fff;font-weight:700}
+.rrow.is-sum .v{color:var(--red)}
+.rrow.is-net{border-top:2px solid rgba(255,255,255,.35);margin-top:10px;padding-top:14px;font-size:17px}
+.rrow.is-net .k{color:#fff;font-weight:700}
+.rrow .k .basis{display:block;font-size:12px;line-height:1.5em;color:rgba(255,255,255,.5)}
+.rrow.is-capped .k{color:#f5c451}
+.rrow.is-capped .v{color:#f5c451}
+.formula{
+  margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.22);
+  font-size:12.5px;line-height:1.7em;color:rgba(255,255,255,.6);
+}
+
+/* ---------- checks ------------------------------------------------------- */
+.checks{list-style:none;margin:0;padding:0}
+.checks li{
+  position:relative;padding:11px 0 11px 32px;font-size:14.5px;line-height:1.6em;
+  border-bottom:1px solid var(--rule);
+}
+.checks li:last-child{border-bottom:0}
+.checks li::before{
+  position:absolute;left:0;top:11px;width:20px;text-align:center;
+  font-weight:900;font-size:15px;line-height:1.6em;
+}
+.checks li.ok::before{content:"\2713";color:var(--green)}
+.checks li.bad::before{content:"\2715";color:var(--red)}
+.checks li.warn::before{content:"!";color:#b8860b}
+.checks li b{font-weight:700}
+.checks li small{display:block;color:var(--grey-70);font-size:13px;line-height:1.55em}
+
+.note{border-left:12px solid var(--grey);background:var(--mist-soft);padding:22px 26px;font-size:15px;line-height:1.75em}
+.note.is-red{border-left-color:var(--red)}
+.note h5{margin-bottom:8px;color:var(--grey)}
+
+/* ---------- table -------------------------------------------------------- */
+.table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;min-width:680px;font-size:15px;line-height:1.55em}
+thead th{
+  background:var(--grey);color:#fff;text-align:left;vertical-align:bottom;
+  font-weight:900;font-size:13px;letter-spacing:.06em;text-transform:uppercase;padding:14px 16px;
+}
+tbody th{text-align:left;font-weight:700;padding:14px 16px;vertical-align:top;border-bottom:1px solid var(--rule)}
+tbody td{padding:14px 16px;vertical-align:top;border-bottom:1px solid var(--rule)}
+tbody tr:nth-child(even) th,tbody tr:nth-child(even) td{background:var(--mist-soft)}
+.tbl-note{font-size:13px;line-height:1.7em;color:var(--grey-70);margin-top:16px}
+
+/* ---------- faq ---------------------------------------------------------- */
+details.faq{border-bottom:1px solid var(--rule)}
+details.faq:first-of-type{border-top:1px solid var(--rule)}
+details.faq summary{
+  list-style:none;cursor:pointer;padding:22px 44px 22px 0;position:relative;
+  font-weight:700;font-size:19px;line-height:1.35em;
+}
+details.faq summary::-webkit-details-marker{display:none}
+details.faq summary::after{
+  content:"+";position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  font-weight:300;font-size:30px;line-height:1;color:var(--red);
+}
+details.faq[open] summary::after{content:"\2013"}
+details.faq summary:hover{color:var(--red)}
+.faq-body{padding:0 44px 26px 0;font-size:16px;line-height:1.75em;color:var(--grey-70)}
+.faq-body p:last-child{margin-bottom:0}
+
+/* ---------- cta + footer ------------------------------------------------- */
+.cta{background:var(--grey);color:#fff;padding:80px 0}
+.cta h2{color:#fff;max-width:780px}
+.cta p{max-width:680px;font-size:19px;line-height:1.65em;color:rgba(255,255,255,.82)}
+.cta .btn-row{display:flex;flex-wrap:wrap;gap:16px;margin-top:36px}
+.site-footer{background:var(--grey);color:#fff;padding:60px 0 20px;border-top:1px solid rgba(255,255,255,.12)}
+.site-footer .cols{display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:36px}
+.site-footer h5{color:#fff;font-size:16px;font-weight:700;text-transform:none;letter-spacing:0;margin-bottom:10px}
+.site-footer ul{list-style:none;margin:0;padding:0;font-size:15px;line-height:1.9em}
+.site-footer a{color:#fff}
+.site-footer a:hover{color:var(--red)}
+.site-footer .logo img{width:170px;margin-bottom:20px}
+.site-footer .fine{
+  margin-top:44px;padding-top:22px;border-top:1px solid rgba(255,255,255,.18);
+  font-size:13px;line-height:1.8em;color:rgba(255,255,255,.62);
+}
+.site-footer .fine p{margin-bottom:12px}
+
+/* ---------- responsive --------------------------------------------------- */
+@media (max-width:1199px){
+  h1{font-size:72px} h2{font-size:42px} h3{font-size:26px}
+}
+@media (max-width:991px){
+  h1{font-size:58px} h2{font-size:38px} h3{font-size:22px}
+  section{padding:64px 0}
+  .calc-grid{grid-template-columns:minmax(0,1fr);gap:28px}
+  .results{position:static}
+  .site-nav{display:none}
+  .site-footer .cols{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  h1{font-size:46px} h2{font-size:32px}
+  .page-header::after{display:none}
+  .page-header .kicker{font-size:18px}
+  .crumbs{font-size:16px}
+  .field-grid{grid-template-columns:minmax(0,1fr)}
+  .panel{padding:26px 22px}
+  .results{padding:26px 22px}
+  .headline .val{font-size:42px}
+  .seg button{min-width:100%;border-right:0;border-bottom:1px solid var(--rule)}
+  .seg button:last-child{border-bottom:0}
+  .site-footer .cols{grid-template-columns:minmax(0,1fr)}
+  .brand img{width:150px}
+}
+</style>
+</head>
+<body>
+
+<!-- ====================== HEADER ====================== -->
+<header class="site-header">
+  <div class="bar">
+    <a class="brand" href="https://www.powertech.com.au/" aria-label="Powertech home">
+      <img src="assets/powertech-logo.png" alt="Powertech">
+    </a>
+    <nav class="site-nav" aria-label="Primary">
+      <a href="https://www.powertech.com.au/about/">About</a>
+      <a href="https://www.powertech.com.au/services/">Services</a>
+      <a href="https://www.powertech.com.au/products/battery-systems/">Products</a>
+      <a href="https://www.powertech.com.au/projects/">Projects</a>
+      <a href="calculator.html">PDRS calculator</a>
+      <a class="is-current" aria-current="page" href="demand-charges.html">Demand charges</a>
+    </nav>
+    <a class="lets-talk" href="https://www.powertech.com.au/contact-us/">
+      <span>Let&rsquo;s<br>Talk</span><span class="p">+</span>
+    </a>
+  </div>
+</header>
+
+<!-- ====================== PAGE HEADER ====================== -->
+<div class="page-header">
+  <div class="wrap inner">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="https://www.powertech.com.au/">Home</a><span class="sep">+</span><a href="index.html">NSW Peak Demand Reduction Scheme</a><span class="sep">+</span>Demand charges
+    </nav>
+    <h1>What is your<br>peak <span>costing you?</span></h1>
+    <p class="kicker">NSW networks bill commercial and industrial sites on their single highest half-hour of demand inside a set window. A battery that discharges through that window lowers the measured peak, and the charge falls with it. Pick the tariff and the system to see what that is worth.</p>
+  </div>
+</div>
+
+<!-- ====================== CALCULATOR ====================== -->
+<section>
+  <div class="wrap">
+    <div class="calc-grid">
+
+      <!-- ---------- inputs ---------- -->
+      <form id="calc" novalidate>
+        <div class="panel">
+
+          <fieldset>
+            <legend>Which network?</legend>
+            <div class="seg" id="segNetwork" role="group" aria-label="Distribution network">
+              <button type="button" data-net="ausgrid" aria-pressed="true">Ausgrid</button>
+              <button type="button" data-net="endeavour" aria-pressed="false">Endeavour</button>
+              <button type="button" data-net="essential" aria-pressed="false">Essential</button>
+            </div>
+            <span class="detected" id="detected">Ausgrid</span>
+          </fieldset>
+
+          <fieldset>
+            <legend>Tariff</legend>
+            <div class="field">
+              <label for="tariff">Network tariff</label>
+              <select id="tariff"></select>
+              <span class="hint" id="tariffHint"></span>
+            </div>
+
+            <div class="field is-hidden" id="fCover" style="margin-top:22px">
+              <label>Which windows will the battery hold down?</label>
+              <div class="seg" id="segCover" role="group" aria-label="Windows covered">
+                <button type="button" data-cover="peak" aria-pressed="true">Peak only</button>
+                <button type="button" data-cover="both" aria-pressed="false">Peak and shoulder</button>
+              </div>
+              <span class="hint">Essential charges shoulder demand within about 10% of the peak rate, so covering both is worth far more; it also needs a far bigger battery.</span>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>The site and the battery</legend>
+            <div class="field-grid">
+              <div class="field">
+                <label for="peak"><span id="peakLabel">Site peak demand (kVA)</span></label>
+                <input type="number" id="peak" value="150" min="0" step="1" inputmode="decimal">
+                <span class="hint">The highest half-hour inside the demand window. Take it from 12 months of interval data, not from the connection size.</span>
+              </div>
+              <div class="field">
+                <label for="power"><span id="powerLabel">Battery power (kVA)</span></label>
+                <input type="number" id="power" value="30" min="0" step="1" inputmode="decimal">
+                <span class="hint">What the inverter can hold continuously for the whole window, not its surge rating.</span>
+              </div>
+              <div class="field">
+                <label for="energy">Usable battery energy (kWh)</label>
+                <input type="number" id="energy" value="120" min="0" step="1" inputmode="decimal">
+                <span class="hint" id="energyHint">Usable, not nameplate.</span>
+              </div>
+              <div class="field">
+                <label for="holdback">Reserve held back (%)</label>
+                <input type="number" id="holdback" value="0" min="0" max="90" step="5" inputmode="decimal">
+                <span class="hint">Energy kept for other duties such as backup, so it is not available to hold the peak down.</span>
+              </div>
+            </div>
+          </fieldset>
+        </div>
+
+        <!-- ---------- checks ---------- -->
+        <div class="panel">
+          <h5>What decides the answer</h5>
+          <ul class="checks" id="checks"></ul>
+        </div>
+      </form>
+
+      <!-- ---------- results ---------- -->
+      <div>
+        <div class="results" aria-live="polite">
+          <h4>Indicative result</h4>
+
+          <div class="headline">
+            <span class="lbl">Network demand charge saved</span>
+            <span class="val" id="rSave">$0</span>
+            <span class="lbl" style="margin-top:4px">per year, excluding GST</span>
+          </div>
+
+          <div class="rrow"><span class="k">Tariff</span><span class="v" id="rTariff">EA305</span></div>
+          <div class="rrow"><span class="k">Demand window</span><span class="v" id="rWindow">6 hours</span></div>
+          <div class="rrow"><span class="k">Charge basis</span><span class="v" id="rBasis">kVA</span></div>
+          <div class="rrow"><span class="k">Rate per unit removed<small class="basis">per year, from the published rate</small></span><span class="v" id="rRate">$0</span></div>
+
+          <div class="rrow is-sum"><span class="k">Peak held off</span><span class="v" id="rHeld">0</span></div>
+          <div class="rrow" id="rowBind"><span class="k">Limited by</span><span class="v" id="rBind">power</span></div>
+          <div class="rrow"><span class="k">Energy to cover the window</span><span class="v" id="rNeed">0 kWh</span></div>
+          <div class="rrow"><span class="k">Energy available</span><span class="v" id="rAvail">0 kWh</span></div>
+          <div class="rrow"><span class="k">Residual site peak</span><span class="v" id="rResid">0</span></div>
+
+          <div class="rrow is-net"><span class="k">Saving per month</span><span class="v" id="rMonth">$0</span></div>
+          <div class="rrow"><span class="k">Value per kWh of storage<small class="basis">per year, at this window length</small></span><span class="v" id="rPerKwh">$0</span></div>
+
+          <p class="formula" id="rFormula"></p>
+        </div>
+      </div>
+
+    </div>
+
+    <p class="tbl-note" style="margin-top:28px">Indicative, and network charges only. These figures ignore retail energy savings, round-trip losses, battery degradation, installation cost and any incentives such as the PDRS. All rates are network charges effective 1 July 2026 to 30 June 2027, excluding GST, and are reset every 1 July. A real estimate needs 12 months of 30-minute interval data for the site. This is not a quote and not advice.</p>
+  </div>
+</section>
+
+<!-- ====================== HOW IT WORKS ====================== -->
+<section class="bg-mist">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Mechanics</span>
+      <h2>One half-hour sets the charge</h2>
+      <p>A demand charge is not an energy charge. It prices the single worst half-hour, so the battery is not being paid to shift energy; it is being paid to make sure one reading never happens.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:48px;align-items:start">
+      <div>
+        <h3>How it is measured</h3>
+        <p>The meter records demand every 30 minutes. The bill takes the highest 30-minute reading inside the tariff&rsquo;s demand window. Large tariffs bill kVA, which is real plus reactive power; small business tariffs bill kW.</p>
+        <p>A battery only cuts the bill if it keeps that highest half-hour down. One missed half-hour sets the charge for the whole period, which is why control matters as much as capacity.</p>
+        <h3 style="margin-top:36px">Charge outside the window</h3>
+        <p>Charging inside a demand window adds to the measured peak and can cost more than the discharge saves. The battery has to be full before the window opens, and on Essential&rsquo;s BLND3TO the charged window runs 7am to 10pm, which leaves overnight only.</p>
+      </div>
+      <div>
+        <h3>The three networks differ</h3>
+        <p><strong>Endeavour Energy</strong> has the shortest window at 4 hours and resets every month. That is the most forgiving structure for a battery: a bad month costs one month.</p>
+        <p><strong>Ausgrid</strong> uses a 6-hour window, the longest of the three, and on EA302 and above sets the charge from the highest half-hour in the previous rolling 12 months. Lowering today&rsquo;s peak does not lower the bill until the old peak ages out, and one bad half-hour keeps the charge high for another year.</p>
+        <p><strong>Essential Energy</strong> charges demand across most of the working day. Its shoulder rate sits within about 10% of its peak rate, so it is the only network where holding the whole working day down is worth chasing.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====================== TARIFF TABLES ====================== -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">2026-27 rates</span>
+      <h2>Demand charges by network</h2>
+      <p>Network charges effective 1 July 2026 to 30 June 2027, excluding GST. The annual column is what one kW or kVA of peak removed is worth over a year, calculated from the published daily or monthly rate.</p>
+    </div>
+
+    <h4>Ausgrid<span style="font-weight:400;color:var(--grey-70)"> &ndash; Sydney, Newcastle, Central Coast. Window 3pm to 9pm on working weekdays.</span></h4>
+    <div class="table-scroll" style="margin-bottom:44px">
+      <table>
+        <thead><tr><th>Tariff</th><th>Customers</th><th>Demand charge</th><th>Annual value per kW or kVA removed</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">EA256 Small business demand <em>(optional)</em></th><td>Under 100 MWh/yr</td><td>44.53 c/kW/day, summer (Nov to Mar) and winter (Jun to Aug) only, resets monthly</td><td>about $108/kW</td></tr>
+          <tr><th scope="row">EA302 LV business</th><td>100 to 160 MWh/yr</td><td>48.34 c/kW/day</td><td>$176/kW</td></tr>
+          <tr><th scope="row">EA305 LV business</th><td>160 to 750 MWh/yr</td><td>57.80 c/kVA/day</td><td>$211/kVA</td></tr>
+          <tr><th scope="row">EA310 LV business</th><td>Over 750 MWh/yr</td><td>59.53 c/kVA/day</td><td>$217/kVA</td></tr>
+          <tr><th scope="row">EA370 High voltage</th><td>High voltage connection</td><td>34.62 c/kVA/day</td><td>$126/kVA</td></tr>
+          <tr><th scope="row">EA390 Sub-transmission</th><td>Sub-transmission connection</td><td>9.71 c/kVA/day</td><td>$35/kVA</td></tr>
+        </tbody>
+      </table>
+      <p class="tbl-note"><strong>Rolling 12-month look-back applies to EA302 and above.</strong> The charge is set by the single highest half-hour in the window in the previous 12 months and is billed every day, so lowering the peak today does not lower the bill until the old peak ages out.</p>
+    </div>
+
+    <h4>Endeavour Energy<span style="font-weight:400;color:var(--grey-70)"> &ndash; Western Sydney, Illawarra, Southern Highlands. Window 4pm to 8pm on business days, resets monthly.</span></h4>
+    <div class="table-scroll" style="margin-bottom:44px">
+      <table>
+        <thead><tr><th>Tariff</th><th>Customers</th><th>Demand charge</th><th>Annual value per kW or kVA removed</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">N92 GS Demand <em>(optional)</em></th><td>Low voltage, under 160 MWh/yr</td><td>24.18 c/kW/day (Nov to Mar), 11.92 c/kW/day (other months)</td><td>about $62/kW</td></tr>
+          <tr><th scope="row">N19 LV STOU Demand</th><td>Low voltage, over 160 MWh/yr</td><td>53.11 c/kVA/day (Nov to Mar), 48.33 c/kVA/day (other months)</td><td>about $184/kVA</td></tr>
+          <tr><th scope="row">N29 HV STOU Demand</th><td>High voltage</td><td>41.96 / 41.40 c/kVA/day</td><td>about $152/kVA</td></tr>
+          <tr><th scope="row">N39 ST STOU Demand</th><td>Sub-transmission</td><td>37.40 / 36.87 c/kVA/day</td><td>about $135/kVA</td></tr>
+        </tbody>
+      </table>
+      <p class="tbl-note">The default tariff for low voltage non-residential sites is the energy-only N91, which carries no demand charge at all. N92 is the opt-in demand tariff, and N19 needs interval and demand (kVA) metering.</p>
+    </div>
+
+    <h4>Essential Energy<span style="font-weight:400;color:var(--grey-70)"> &ndash; Regional NSW. Billed in kVA per month, resets monthly.</span></h4>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Tariff</th><th>Customers</th><th>Peak</th><th>Shoulder</th><th>Off-peak</th><th>Annual value per kVA removed</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">BLND1AB Small business demand <em>(opt-in)</em></th><td>Small business</td><td>$9.70</td><td>not charged</td><td>not charged</td><td>$116</td></tr>
+          <tr><th scope="row">BLND3AO LV large business demand</th><td>Low voltage, large</td><td>$12.04</td><td>$10.89</td><td>$2.85</td><td>$144 peak only, $275 peak and shoulder</td></tr>
+          <tr><th scope="row">BLND3TO LV demand, alternative</th><td>Low voltage, large</td><td>$15.49 single window</td><td>none</td><td>none</td><td>$186</td></tr>
+          <tr><th scope="row">BHND3AO HV business demand</th><td>High voltage</td><td>$11.50</td><td>$10.41</td><td>$3.11</td><td>$138 peak only, $263 peak and shoulder</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="tbl-note">Rates are dollars per kVA per month. Windows for BLND3AO and BHND3AO: peak 5pm to 8pm business days; shoulder 7am to 5pm and 8pm to 10pm business days; off-peak weekends and 10pm to 7am. BLND1AB demand is measured 5pm to 8pm on weekdays including public holidays. BLND3TO is a single charge on the highest demand between 7am and 10pm on weekdays including public holidays. Off-peak demand is also billed, but it falls on weekends and overnight, so it is excluded from the annual figures and from the calculator. Essential is the only NSW network where the working day itself carries a large demand charge.</p>
+  </div>
+</section>
+
+<!-- ====================== WHAT TO CHECK ====================== -->
+<section class="bg-mist">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Before you size anything</span>
+      <h2>What to check on a real site</h2>
+    </div>
+
+    <details class="faq">
+      <summary>Which tariff is the site actually on?</summary>
+      <div class="faq-body"><p>This decides everything else. Small business demand tariffs are optional on all three networks: EA256 on Ausgrid, N92 on Endeavour and BLND1AB on Essential. A small site sitting on a flat or energy-only tariff has no demand charge to reduce, so a battery saves nothing on this front, although the site may be able to move onto a demand tariff and then benefit. Endeavour&rsquo;s default low voltage non-residential tariff is the energy-only N91, which carries no demand charge.</p></div>
+    </details>
+    <details class="faq">
+      <summary>Have you got the interval data?</summary>
+      <div class="faq-body"><p>Request 12 months of 30-minute kVA data from the retailer. It tells you the real peak, how long the site sits near it, and how often it goes there. A peak that happens once a year needs a different battery from one that recurs every weekday, and without the data any saving figure is a guess. The site peak field on this page should come from that data, not from the connection size or the switchboard rating.</p></div>
+    </details>
+    <details class="faq">
+      <summary>Is the tariff billed in kVA or kW?</summary>
+      <div class="faq-body"><p>Large tariffs bill kVA, which is real plus reactive power. Reactive power therefore counts against you, and the inverter&rsquo;s ability to supply it becomes part of the saving rather than an afterthought. Small business demand tariffs bill kW. This page follows whichever basis the selected tariff uses and relabels the inputs to match.</p></div>
+    </details>
+    <details class="faq">
+      <summary>Can the control system actually hold the cap?</summary>
+      <div class="faq-body"><p>The battery needs a discharge cap tied to a live demand reading, plus enough reserve to cover the whole window. On Ausgrid&rsquo;s EA302 and larger tariffs the charge is set by the highest half-hour in the previous rolling 12 months, so a single miss is expensive: it holds the charge up for another 12 months and no amount of good behaviour afterwards brings it down early. Endeavour and Essential reset monthly, so a miss costs one month.</p></div>
+    </details>
+    <details class="faq">
+      <summary>How much energy does it really need?</summary>
+      <div class="faq-body"><p>The window length sets the ceiling: six hours on Ausgrid, four on Endeavour, three for Essential&rsquo;s peak alone and up to fifteen if the shoulder is covered too. Holding one kW off for a six-hour Ausgrid window needs six kWh at the ceiling. In practice sites rarely run above the cap for the whole window, so less energy is often enough, but that is a judgement you can only make with the interval data in front of you. The calculator above uses the ceiling case.</p></div>
+    </details>
+    <details class="faq">
+      <summary>What is not covered here?</summary>
+      <div class="faq-body"><p>Stand-alone grid-connected storage tariffs have different structures and were not analysed: Ausgrid EA334, Endeavour N95, Essential BLND4SB and BLND4LS. Evoenergy in the ACT is not covered. Two source caveats are worth knowing: Ausgrid&rsquo;s tariff statement says the window applies on &ldquo;working weekdays&rdquo; while a retailer summary says weekdays including public holidays, so confirm with the retailer; and Essential&rsquo;s brochure states that a demand tariff applies once a site uses more than 160 MWh a year, but the brochure is undated, so confirm the threshold for 2026-27.</p></div>
+    </details>
+    <details class="faq">
+      <summary>Does this stack with the PDRS?</summary>
+      <div class="faq-body"><p>Yes, and they are independent. The PDRS pays a one-off certificate value against the capital cost of the battery, while the demand charge saving is an ongoing reduction in the network component of the bill. A battery installed for demand-charge reduction is exactly the use case the NSW Government named when it opened the scheme to business batteries. Our <a href="calculator.html">PDRS calculator</a> estimates the certificate side, and the <a href="index.html">scheme explainer</a> covers eligibility.</p></div>
+    </details>
+  </div>
+</section>
+
+<!-- ====================== CTA ====================== -->
+<div class="cta">
+  <div class="wrap">
+    <span class="eyebrow">More at stake</span>
+    <h2>Bring us the interval data</h2>
+    <p>Demand charge savings are decided by the shape of the load, not the size of the battery. Send us 12 months of 30-minute data and we will tell you what the peak is really costing and what it takes to hold it down.</p>
+    <div class="btn-row">
+      <a class="btn btn-red" href="https://www.powertech.com.au/contact-us/">Let&rsquo;s talk</a>
+      <a class="btn btn-ghost" href="calculator.html">PDRS calculator</a>
+      <a class="btn btn-ghost" href="index.html">Scheme explainer</a>
+    </div>
+  </div>
+</div>
+
+<!-- ====================== FOOTER ====================== -->
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="cols">
+      <div class="logo">
+        <img src="assets/powertech-logo-white.png" alt="Powertech">
+        <p style="font-size:15px;line-height:1.7em;color:rgba(255,255,255,.75);margin:0">The engineers and technical specialists that you turn to when there is more at stake.</p>
+      </div>
+      <div>
+        <h5>Services</h5>
+        <ul>
+          <li><a href="https://www.powertech.com.au/services/">EPC Solutions</a></li>
+          <li><a href="https://www.powertech.com.au/services/">Engineering &amp; Design</a></li>
+          <li><a href="https://www.powertech.com.au/services/">Build &amp; Install</a></li>
+          <li><a href="https://www.powertech.com.au/services/">Commissioning</a></li>
+          <li><a href="https://www.powertech.com.au/services/">Operate &amp; Maintain</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>NSW batteries</h5>
+        <ul>
+          <li><a href="index.html">Scheme explainer</a></li>
+          <li><a href="calculator.html">PDRS calculator</a></li>
+          <li><a href="demand-charges.html">Demand charge calculator</a></li>
+          <li><a href="https://www.powertech.com.au/products/battery-systems/">Battery Systems</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Contact</h5>
+        <ul>
+          <li><a href="tel:+61892444477">+61 8 9244 4477</a></li>
+          <li>14 Energy Street<br>Malaga WA 6090</li>
+          <li><a href="https://www.powertech.com.au/contact-us/">Contact us +</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="fine">
+      <p><strong>Electrical Contractors Licences:</strong> Victoria 22392 &nbsp;|&nbsp; NSW 253377C &nbsp;|&nbsp; QLD 69167 &nbsp;|&nbsp; NT C2702 &nbsp;|&nbsp; SA PGE225156 &nbsp;|&nbsp; WA EC001900</p>
+      <p>Network demand charge rates researched 9 October 2026, effective 1 July 2026 to 30 June 2027, excluding GST. Sources: AER 2026-27 consolidated stakeholder report (tariff schedule, all networks); Ausgrid Network Price List 2026-27 and Tariff Structure Statement 2024-29; Endeavour Energy Network Price List 2026-27; Essential Energy network pricing. Essential Energy&rsquo;s own price list was not opened: its rates come from the AER report and its windows from a retailer summary. Rates are reset every 1 July. This page is general information, not legal, financial or taxation advice, and not a quote. Confirm the site&rsquo;s tariff and the current rates with the retailer or the network before relying on any figure.</p>
+      <p>&copy; 2026 Powertech Pty Ltd</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* Days used to annualise the published daily rates.
+     Nov to Mar = 151 days. Ausgrid EA256 is charged in summer (Nov to Mar)
+     plus winter (Jun to Aug, 92 days) only, so 243 days a year. */
+  var SUMMER = 151;
+  var OTHER  = 365 - SUMMER;
+  var AUS_SEASONAL = SUMMER + 92;
+
+  var NETWORKS = {
+    ausgrid: {
+      name: "Ausgrid",
+      region: "Sydney, Newcastle, Central Coast",
+      windowText: "3pm to 9pm on working weekdays",
+      tariffs: [
+        { id:"EA256", label:"EA256 Small business demand (optional)", who:"Under 100 MWh/yr",
+          unit:"kW",  hours:6, annual:44.53*AUS_SEASONAL/100, reset:"monthly", optional:true,
+          rateText:"44.53 c/kW/day, summer (Nov to Mar) and winter (Jun to Aug) only" },
+        { id:"EA302", label:"EA302 LV business", who:"100 to 160 MWh/yr",
+          unit:"kW",  hours:6, annual:48.34*365/100, reset:"rolling12",
+          rateText:"48.34 c/kW/day" },
+        { id:"EA305", label:"EA305 LV business", who:"160 to 750 MWh/yr",
+          unit:"kVA", hours:6, annual:57.80*365/100, reset:"rolling12",
+          rateText:"57.80 c/kVA/day" },
+        { id:"EA310", label:"EA310 LV business", who:"Over 750 MWh/yr",
+          unit:"kVA", hours:6, annual:59.53*365/100, reset:"rolling12",
+          rateText:"59.53 c/kVA/day" },
+        { id:"EA370", label:"EA370 High voltage", who:"High voltage connection",
+          unit:"kVA", hours:6, annual:34.62*365/100, reset:"rolling12",
+          rateText:"34.62 c/kVA/day" },
+        { id:"EA390", label:"EA390 Sub-transmission", who:"Sub-transmission connection",
+          unit:"kVA", hours:6, annual:9.71*365/100, reset:"rolling12",
+          rateText:"9.71 c/kVA/day" }
+      ]
+    },
+    endeavour: {
+      name: "Endeavour Energy",
+      region: "Western Sydney, Illawarra, Southern Highlands",
+      windowText: "4pm to 8pm on business days, public holidays excluded",
+      tariffs: [
+        { id:"N92", label:"N92 GS Demand (optional)", who:"Low voltage, under 160 MWh/yr",
+          unit:"kW",  hours:4, annual:(24.18*SUMMER + 11.92*OTHER)/100, reset:"monthly", optional:true,
+          rateText:"24.18 c/kW/day Nov to Mar, 11.92 c/kW/day other months" },
+        { id:"N19", label:"N19 LV STOU Demand", who:"Low voltage, over 160 MWh/yr",
+          unit:"kVA", hours:4, annual:(53.11*SUMMER + 48.33*OTHER)/100, reset:"monthly",
+          rateText:"53.11 c/kVA/day Nov to Mar, 48.33 c/kVA/day other months" },
+        { id:"N29", label:"N29 HV STOU Demand", who:"High voltage",
+          unit:"kVA", hours:4, annual:(41.96*SUMMER + 41.40*OTHER)/100, reset:"monthly",
+          rateText:"41.96 c/kVA/day Nov to Mar, 41.40 c/kVA/day other months" },
+        { id:"N39", label:"N39 ST STOU Demand", who:"Sub-transmission",
+          unit:"kVA", hours:4, annual:(37.40*SUMMER + 36.87*OTHER)/100, reset:"monthly",
+          rateText:"37.40 c/kVA/day Nov to Mar, 36.87 c/kVA/day other months" }
+      ]
+    },
+    essential: {
+      name: "Essential Energy",
+      region: "Regional NSW",
+      windowText: "billed in kVA per month",
+      tariffs: [
+        { id:"BLND1AB", label:"BLND1AB Small business demand (opt-in)", who:"Small business",
+          unit:"kVA", hours:3, peak:9.70, shoulder:0, coverable:false, reset:"monthly", optional:true,
+          rateText:"$9.70 per kVA per month, peak only",
+          windowText:"5pm to 8pm weekdays, public holidays included" },
+        { id:"BLND3AO", label:"BLND3AO LV large business demand", who:"Low voltage, large",
+          unit:"kVA", hours:3, shHours:15, peak:12.04, shoulder:10.89, coverable:true, reset:"monthly",
+          rateText:"$12.04 peak and $10.89 shoulder, per kVA per month",
+          windowText:"peak 5pm to 8pm, shoulder 7am to 5pm and 8pm to 10pm, business days" },
+        { id:"BLND3TO", label:"BLND3TO LV demand, alternative", who:"Low voltage, large",
+          unit:"kVA", hours:15, peak:15.49, shoulder:0, coverable:false, reset:"monthly",
+          rateText:"$15.49 per kVA per month, single window",
+          windowText:"highest demand 7am to 10pm weekdays, public holidays included" },
+        { id:"BHND3AO", label:"BHND3AO HV business demand", who:"High voltage",
+          unit:"kVA", hours:3, shHours:15, peak:11.50, shoulder:10.41, coverable:true, reset:"monthly",
+          rateText:"$11.50 peak and $10.41 shoulder, per kVA per month",
+          windowText:"peak 5pm to 8pm, shoulder 7am to 5pm and 8pm to 10pm, business days" }
+      ]
+    }
+  };
+
+  var el = function (id) { return document.getElementById(id); };
+  var netKey = "ausgrid";
+  var tariffIdx = 2;        // EA305, the common mid-size LV business tariff
+  var coverBoth = false;
+
+  var money = function (n) {
+    if (!isFinite(n)) n = 0;
+    return "$" + Math.round(n).toLocaleString("en-AU");
+  };
+  var money2 = function (n) {
+    if (!isFinite(n)) n = 0;
+    return "$" + n.toLocaleString("en-AU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+  var num = function (n, dp) {
+    if (!isFinite(n)) n = 0;
+    dp = dp || 0;
+    return n.toLocaleString("en-AU", { minimumFractionDigits: dp, maximumFractionDigits: dp });
+  };
+  var val = function (id) {
+    var v = parseFloat(el(id).value);
+    return isFinite(v) && v > 0 ? v : 0;
+  };
+
+  /* Essential bills a monthly $/kVA rate per window, so its annual value and its
+     window length both depend on whether the shoulder is being covered. The other
+     two networks publish a single daily rate and a single window. */
+  function resolve(t) {
+    if (t.peak === undefined) {
+      return { annual: t.annual, hours: t.hours };
+    }
+    var both = t.coverable && coverBoth;
+    return {
+      annual: (both ? (t.peak + t.shoulder) : t.peak) * 12,
+      hours:  both ? t.shHours : t.hours
+    };
+  }
+
+  function fillTariffs() {
+    var net = NETWORKS[netKey];
+    var sel = el("tariff");
+    sel.innerHTML = "";
+    for (var i = 0; i < net.tariffs.length; i++) {
+      var o = document.createElement("option");
+      o.value = String(i);
+      o.textContent = net.tariffs[i].label;
+      sel.appendChild(o);
+    }
+    if (tariffIdx >= net.tariffs.length) tariffIdx = 0;
+    sel.value = String(tariffIdx);
+  }
+
+  function compute() {
+    var net = NETWORKS[netKey];
+    var t = net.tariffs[tariffIdx];
+    var r = resolve(t);
+    var unit = t.unit;
+
+    var peak   = val("peak");
+    var power  = val("power");
+    var energy = val("energy");
+    var hbRaw  = parseFloat(el("holdback").value);
+    var hb     = isFinite(hbRaw) ? Math.min(Math.max(hbRaw, 0), 90) : 0;
+    var usable = energy * (1 - hb / 100);
+
+    var energyLimit = r.hours > 0 ? usable / r.hours : 0;
+
+    var cand = [power, energyLimit];
+    if (peak > 0) cand.push(peak);
+    var held = Math.max(0, Math.min.apply(null, cand));
+
+    /* Name the binding constraint. Site peak is reported first because a battery
+       sized past the peak is a sizing error, not a limit worth relieving. */
+    var span = Math.max(power, energyLimit, 1e-9);
+    var matched = Math.abs(power - energyLimit) / span < 0.01;
+    var bind;
+    if (power <= 0 || usable <= 0) bind = "nothing entered yet";
+    else if (peak > 0 && peak <= energyLimit + 1e-9 && peak <= power + 1e-9) bind = "the site peak";
+    else if (matched) bind = "power and energy, matched";
+    else if (energyLimit < power) bind = "battery energy";
+    else bind = "battery power";
+
+    var saving  = held * r.annual;
+    var perKwh  = r.hours > 0 ? r.annual / r.hours : 0;
+    var capAt   = peak > 0 ? Math.min(power, peak) : power;
+    var need    = capAt * r.hours;
+    var residual = peak > 0 ? Math.max(0, peak - held) : 0;
+    var windowText = t.windowText || net.windowText;
+
+    /* ---- checks ---- */
+    var checks = [];
+
+    if (peak <= 0) {
+      checks.push({ s:"warn", t:"<b>Enter the site peak.</b> Without it the result assumes the site peaks at or above " +
+        num(held, 1) + " " + unit + ". Take the figure from 12 months of 30-minute interval data." });
+    }
+
+    if (bind === "battery energy") {
+      checks.push({ s:"warn", t:"<b>Energy limited.</b> Holding " + num(capAt, 1) + " " + unit + " across a " +
+        num(r.hours, 0) + "-hour window needs " + num(need, 0) + " kWh, but only " + num(usable, 0) +
+        " kWh is available, so the battery can hold just " + num(held, 1) + " " + unit + ". Another " +
+        num(Math.max(0, need - usable), 0) + " kWh would release the full inverter rating." });
+    } else if (bind === "the site peak") {
+      checks.push({ s:"warn", t:"<b>Sized past the peak.</b> The battery can hold more than the site&rsquo;s " +
+        num(peak, 1) + " " + unit + " peak, so capacity beyond that earns nothing on this tariff. The demand charge cannot go below zero." });
+    } else if (bind === "power and energy, matched") {
+      checks.push({ s:"ok", t:"<b>Power and energy are matched.</b> The battery has very close to exactly the " +
+        num(need, 0) + " kWh needed to hold " + num(capAt, 1) + " " + unit + " for the full " + num(r.hours, 0) +
+        "-hour window. Both would have to grow together to save more." });
+    } else {
+      checks.push({ s:"ok", t:"<b>Power limited.</b> There is enough energy to hold " + num(power, 1) + " " + unit +
+        " for the whole " + num(r.hours, 0) + "-hour window, so the inverter sets the saving. A larger inverter would lift it, up to the site peak." });
+    }
+
+    if (t.reset === "rolling12") {
+      checks.push({ s:"warn", t:"<b>Rolling 12-month look-back.</b> " + t.id +
+        " sets the charge from the single highest half-hour in the window over the previous 12 months, and bills it every day. " +
+        "One missed half-hour holds the charge up for another 12 months, so the battery has to hold the cap on every working weekday, all year. " +
+        "Size the reserve for the worst day, not the average one." });
+    } else {
+      checks.push({ s:"ok", t:"<b>Monthly reset.</b> The charge is set by the month&rsquo;s highest half-hour, so a missed window costs one month rather than a year." });
+    }
+
+    if (unit === "kVA") {
+      checks.push({ s:"warn", t:"<b>Billed in kVA.</b> Real plus reactive power counts, so the inverter has to supply reactive power too and a poor power factor eats into the saving. Enter the continuous kVA rating, not the kW." });
+    } else {
+      checks.push({ s:"ok", t:"<b>Billed in kW.</b> Reactive power is not charged on this tariff, so only real power has to be held down." });
+    }
+
+    if (t.optional) {
+      checks.push({ s:"warn", t:"<b>Opt-in tariff.</b> " + t.id +
+        " is optional, so confirm the site is actually on it. A site on a flat or energy-only tariff has no demand charge to reduce, though it may be able to move onto a demand tariff." });
+    }
+
+    if (t.coverable) {
+      checks.push(coverBoth
+        ? { s:"warn", t:"<b>Shoulder included.</b> Holding 7am to 10pm means up to 15 hours of discharge, which is why the energy requirement jumps. The off-peak rate falls on weekends and overnight and is not included." }
+        : { s:"ok", t:"<b>Peak only.</b> Essential&rsquo;s shoulder rate is within about 10% of its peak rate, so covering the shoulder as well roughly doubles the annual value per kVA, if the battery can carry it." });
+    }
+
+    checks.push({ s:"ok", t:"<b>" + num(r.hours, 0) + "-hour window.</b> " +
+      windowText.charAt(0).toUpperCase() + windowText.slice(1) + "." });
+
+    checks.push({ s:"warn", t:"<b>Charge outside the window.</b> Charging inside a demand window adds to the measured peak and on a kVA tariff can cost more than the discharge saves." });
+
+    /* ---- render ---- */
+    el("detected").textContent = net.name + " · " + net.region;
+    el("peakLabel").textContent = "Site peak demand (" + unit + ")";
+    el("powerLabel").textContent = "Battery power (" + unit + ")";
+    el("energyHint").innerHTML = "Usable, not nameplate. Holding " + num(capAt, 1) + " " + unit +
+      " across the " + num(r.hours, 0) + "-hour window needs " + num(need, 0) + " kWh.";
+    el("tariffHint").textContent = t.who + ". " + t.rateText + ".";
+
+    el("fCover").classList.toggle("is-hidden", !t.coverable);
+
+    el("rSave").textContent = money(saving);
+    el("rSave").className = "val" + (saving > 0 ? "" : " is-nil");
+    el("rTariff").textContent = t.id;
+    el("rWindow").textContent = num(r.hours, 0) + " hours";
+    el("rBasis").textContent = unit;
+    el("rRate").textContent = money2(r.annual) + " / " + unit;
+    el("rHeld").textContent = num(held, 1) + " " + unit;
+    el("rBind").textContent = bind;
+    el("rowBind").className = "rrow" + (bind === "battery power" || bind === "power and energy, matched" || bind === "nothing entered yet" ? "" : " is-capped");
+    el("rNeed").textContent = num(need, 0) + " kWh";
+    el("rAvail").textContent = num(usable, 0) + " kWh" + (hb > 0 ? " (after " + num(hb, 0) + "% reserve)" : "");
+    el("rResid").textContent = peak > 0 ? num(residual, 1) + " " + unit : "–";
+    el("rMonth").textContent = money(saving / 12);
+    el("rPerKwh").textContent = money2(perKwh);
+
+    el("rFormula").innerHTML = held > 0
+      ? num(held, 1) + " " + unit + " held off &times; " + money2(r.annual) + " per " + unit +
+        " per year = " + money(saving) + ". " + (t.reset === "rolling12"
+          ? "Charge set by the highest half-hour in the previous 12 months."
+          : "Charge resets each month.")
+      : "Enter a battery power and energy to see a saving.";
+  }
+
+  /* ---- controls ---- */
+  function setNetwork(next) {
+    netKey = next;
+    var btns = el("segNetwork").querySelectorAll("button");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].setAttribute("aria-pressed", btns[i].getAttribute("data-net") === next ? "true" : "false");
+    }
+    tariffIdx = Math.min(tariffIdx, NETWORKS[next].tariffs.length - 1);
+    fillTariffs();
+    compute();
+  }
+
+  function setCover(next) {
+    coverBoth = (next === "both");
+    var btns = el("segCover").querySelectorAll("button");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].setAttribute("aria-pressed", btns[i].getAttribute("data-cover") === next ? "true" : "false");
+    }
+    compute();
+  }
+
+  el("segNetwork").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-net]");
+    if (b) setNetwork(b.getAttribute("data-net"));
+  });
+
+  el("segCover").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-cover]");
+    if (b) setCover(b.getAttribute("data-cover"));
+  });
+
+  el("tariff").addEventListener("change", function () {
+    tariffIdx = parseInt(el("tariff").value, 10) || 0;
+    compute();
+  });
+
+  var ids = ["peak", "power", "energy", "holdback"];
+  for (var i = 0; i < ids.length; i++) {
+    el(ids[i]).addEventListener("input", compute);
+    el(ids[i]).addEventListener("change", compute);
+  }
+
+  fillTariffs();
+  compute();
+})();
+</script>
+
+</body>
+</html>

@@ -29,6 +29,8 @@ copy /Y "%SRC%\index.html" "index.html" >nul
 if errorlevel 1 goto copyfail
 copy /Y "%SRC%\calculator.html" "calculator.html" >nul
 if errorlevel 1 goto copyfail
+copy /Y "%SRC%\demand-charges.html" "demand-charges.html" >nul
+if errorlevel 1 goto copyfail
 xcopy "%SRC%\assets\*" "assets\" /E /I /Y /Q >nul
 if errorlevel 1 goto copyfail
 
@@ -66,6 +68,7 @@ echo.
 echo Done. Live site will refresh within about a minute:
 echo   https://powertech-au.github.io/nsw-pdrs/
 echo   https://powertech-au.github.io/nsw-pdrs/calculator.html
+echo   https://powertech-au.github.io/nsw-pdrs/demand-charges.html
 pause
 exit /b 0
 
