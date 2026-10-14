@@ -886,6 +886,12 @@ details.faq summary:hover{color:var(--red)}
     el("rMonth").textContent = money(saving / 12);
     el("rPerKwh").textContent = money2(perKwh);
 
+    var out = "";
+    for (var i = 0; i < checks.length; i++) {
+      out += '<li class="' + checks[i].s + '">' + checks[i].t + "</li>";
+    }
+    el("checks").innerHTML = out;
+
     el("rFormula").innerHTML = held > 0
       ? num(held, 1) + " " + unit + " held off &times; " + money2(r.annual) + " per " + unit +
         " per year = " + money(saving) + ". " + (t.reset === "rolling12"
