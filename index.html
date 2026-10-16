@@ -345,6 +345,73 @@ summary:hover{color:var(--red)}
   .calc .out b{font-size:36px}
   .calc{padding:26px 24px 24px}
 }
+
+/* ---------- print ---------------------------------------------------------
+   Ctrl+P produces a clean A4 document: the sticky header and breadcrumbs are
+   navigation rather than content, collapsed sections are expanded so nothing
+   is lost on paper, and blocks are kept whole across page breaks.
+   -------------------------------------------------------------------------- */
+@media print{
+  @page{size:A4 portrait;margin:13mm 12mm 14mm}
+
+  /* web-only chrome */
+  .site-header,
+  .page-header .crumbs,
+  .header-actions .btn,
+  .cta .btn-row{display:none !important}
+
+  *,*::before,*::after{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+  html,body{background:#fff !important;font-size:10.5pt;line-height:1.5em}
+  .wrap{max-width:100% !important;padding:0 !important}
+  /* full-bleed coloured sections still need an inset of their own, or their
+     content sits flush against the panel edge once .wrap padding is removed */
+  .band-red .wrap,.cta .wrap,.site-footer .wrap{padding:0 16px !important}
+  section{padding:20px 0 !important}
+  .page-header{background:#fff !important}
+  .page-header::after{display:none !important}
+  .page-header .inner{padding:0 0 18px !important}
+
+  h1{font-size:34pt !important;line-height:.95em !important;margin-bottom:14px !important}
+  h2{font-size:18pt !important;margin-bottom:14px !important}
+  h3{font-size:12.5pt !important;margin-bottom:10px !important}
+  h4{font-size:11.5pt !important}
+  h5{font-size:9pt !important}
+  .page-header .kicker,.lead{font-size:11.5pt !important;line-height:1.48em !important}
+  .sec-head{margin-bottom:20px !important;max-width:100% !important}
+  p{margin-bottom:11px !important}
+  blockquote{margin:18px 0 !important;font-size:13pt !important}
+
+  /* expand collapsed sections. Chrome hides the slot with content-visibility,
+     which only ::details-content can override; the display rule covers engines
+     that do not support that pseudo-element yet. */
+  details::details-content{content-visibility:visible !important;block-size:auto !important}
+  details>*:not(summary){display:block !important}
+  details>summary::after,
+  details>summary::-webkit-details-marker{display:none !important;content:"" !important}
+  details>summary{cursor:default !important;padding-right:0 !important}
+
+  .band-red{padding:26px 0 28px !important}
+  .band-red h2{margin-bottom:20px !important}
+  .cta{padding:28px 0 !important}
+  .site-footer{padding:26px 0 10px !important}
+
+  /* keep logical blocks whole across page breaks */
+  .card,.note,blockquote,.calc,.eq,details,.stat-row li,.table-scroll{break-inside:avoid;page-break-inside:avoid}
+  tr,th,td{break-inside:avoid;page-break-inside:avoid}
+  thead{display:table-header-group}
+  h1,h2,h3,h4,h5,.sec-head,summary{break-after:avoid;page-break-after:avoid}
+  table{width:100% !important;min-width:0 !important;font-size:9pt !important}
+  .table-scroll{overflow:visible !important}
+  thead th,tbody th,tbody td{padding:7px 9px !important}
+  .cards{gap:14px !important}
+  .card{padding:16px 16px 14px !important}
+  .card p,.card ul{font-size:9.5pt !important}
+  .tbl-note,.eq-note{font-size:8.5pt !important}
+  .site-footer .fine{font-size:8pt !important}
+
+  a{color:inherit !important;text-decoration:none !important}
+  p a{color:#c0392b !important}
+}
 </style>
 </head>
 <body>
